@@ -6,6 +6,7 @@ const { validationSignup } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const app = express();
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middleware/auth");
 // convert the json to js object and send the app.post api in the req to read properly
 app.use(express.json());
 app.use(cookieParser());
@@ -39,17 +40,21 @@ app.post("/login", async (req, res) => {
     const user = await UserModel.findOne({ emailId });
 
     if (!user) {
-      throw new Error("the email id is not present in the database");
+      throw new Error("Invalid email");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (isPasswordValid) {
       // create the jwt token
-      const token = await jwt.sign({ _id: user._id }, "Dev@Tinder$123");
+      const token = await jwt.sign({ _id: user._id }, "Dev@Tinder$123", {
+        expiresIn: "1d",
+      });
 
       // Add the token to cookie and send the response back to the user
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000), // cookie will be removed after 8 hours
+      }); // 1d expire of the cookies
       res.send("login done");
     } else {
       throw new Error("password not correct");
@@ -59,20 +64,21 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if (!token) throw new Error("invalid token");
-
-    const decodedMessage = await jwt.verify(token, "Dev@Tinder$123");
-    const { _id } = decodedMessage;
-    const userdetails = await UserModel.findById(_id);
-    if (!userdetails) throw new Error("user is not found");
-
+    const userdetails = req.user;
     res.send(userdetails);
   } catch (err) {
     res.status(400).send("Error saving the user:" + err.message);
+  }
+});
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    res.send(user.firstName + " sent the connection request");
+  } catch (err) {
+    res.status(400).send("ERROR", +err);
   }
 });
 
