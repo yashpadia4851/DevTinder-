@@ -1,9 +1,57 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
 const { UserModel } = require("./modules/user");
+const { validationSignup } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 const app = express();
 // convert the json to js object and send the app.post api in the req to read properly
 app.use(express.json());
+console.log("UserModel", UserModel);
+
+app.post("/signup", async (req, res) => {
+  // Creating the new instance of the usermodole module
+  try {
+    validationSignup(req);
+    const { firstName, lastName, emailId, password, age, gender } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log(passwordHash);
+    const user = new UserModel({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+      age,
+      gender,
+    });
+    await user.save();
+    res.send("user added");
+  } catch (err) {
+    res.status(400).send("Error saving the user:" + err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await UserModel.findOne({ emailId });
+    console.log("checking user", user);
+
+    if (!user) {
+      throw new Error("the email id is not present in the database");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
+      res.send("login done");
+    } else {
+      throw new Error("password not correct");
+    }
+  } catch (err) {
+    res.status(400).send("Error saving the user:" + err.message);
+  }
+});
 
 // find one user from the database
 app.get("/user", async (req, res) => {
@@ -74,8 +122,19 @@ app.patch("/user/:userId", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
   // Creating the new instance of the usermodole module
-  const user = new UserModel(req.body);
   try {
+    validationSignup(req);
+    const { firstName, lastName, emailId, password, age, gender } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log(passwordHash);
+    const user = new UserModel({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+      age,
+      gender,
+    });
     await user.save();
     res.send("user added");
   } catch (err) {
