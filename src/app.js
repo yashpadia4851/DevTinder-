@@ -5,7 +5,7 @@ const { UserModel } = require("./modules/user");
 const { validationSignup } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const app = express();
-const jwt = require("jsonwebtoken");
+
 const { userAuth } = require("./middleware/auth");
 // convert the json to js object and send the app.post api in the req to read properly
 app.use(express.json());
@@ -42,14 +42,12 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid email");
     }
+    // bcrypt.compare(password, user.password);
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
+    const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
       // create the jwt token
-      const token = await jwt.sign({ _id: user._id }, "Dev@Tinder$123", {
-        expiresIn: "1d",
-      });
+      const token = await user.getJWT();
 
       // Add the token to cookie and send the response back to the user
       res.cookie("token", token, {
