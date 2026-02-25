@@ -1,12 +1,14 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const { connectDB } = require("./config/database");
 const { UserModel } = require("./modules/user");
 const { validationSignup } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const app = express();
+const jwt = require("jsonwebtoken");
 // convert the json to js object and send the app.post api in the req to read properly
 app.use(express.json());
-console.log("UserModel", UserModel);
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   // Creating the new instance of the usermodole module
@@ -35,7 +37,6 @@ app.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
 
     const user = await UserModel.findOne({ emailId });
-    console.log("checking user", user);
 
     if (!user) {
       throw new Error("the email id is not present in the database");
@@ -44,10 +45,32 @@ app.post("/login", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (isPasswordValid) {
+      // create the jwt token
+      const token = await jwt.sign({ _id: user._id }, "Dev@Tinder$123");
+
+      // Add the token to cookie and send the response back to the user
+      res.cookie("token", token);
       res.send("login done");
     } else {
       throw new Error("password not correct");
     }
+  } catch (err) {
+    res.status(400).send("Error saving the user:" + err.message);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if (!token) throw new Error("invalid token");
+
+    const decodedMessage = await jwt.verify(token, "Dev@Tinder$123");
+    const { _id } = decodedMessage;
+    const userdetails = await UserModel.findById(_id);
+    if (!userdetails) throw new Error("user is not found");
+
+    res.send(userdetails);
   } catch (err) {
     res.status(400).send("Error saving the user:" + err.message);
   }
@@ -126,7 +149,6 @@ app.post("/signup", async (req, res) => {
     validationSignup(req);
     const { firstName, lastName, emailId, password, age, gender } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(passwordHash);
     const user = new UserModel({
       firstName,
       lastName,
