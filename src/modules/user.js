@@ -59,7 +59,6 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-console.log("userSchema", userSchema);
 userSchema.methods.getJWT = async function () {
   const user = this;
 
@@ -76,6 +75,8 @@ userSchema.methods.validatePassword = async function (password) {
   const isPasswordValid = await bcrypt.compare(password, user.password);
   return isPasswordValid;
 };
+
+userSchema.index({ firstName: 1 }); // create one search api and integrated by yourself
 
 const UserModel = mongoose.model("User", userSchema);
 
