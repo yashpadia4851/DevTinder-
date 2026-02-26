@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
         message: "gender must be one of: male, female, other",
       },
     },
-    photo: {
+    photoURL: {
       type: String,
       default: "",
     },

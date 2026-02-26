@@ -5,6 +5,7 @@ const { connectDB } = require("./config/database");
 const { authRouter } = require("./routes/auth");
 const { profileRouter } = require("./routes/profile");
 const { requestRouter } = require("./routes/request");
+const { userRouter } = require("./routes/user");
 
 const app = express();
 // convert the json to js object and send the app.post api in the req to read properly
@@ -15,6 +16,7 @@ app.use(cookieParser());
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use("/", userRouter);
 
 connectDB()
   .then(() => {
