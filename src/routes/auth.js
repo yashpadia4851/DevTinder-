@@ -8,7 +8,16 @@ authRouter.post("/signup", async (req, res) => {
   // Creating the new instance of the usermodole module
   try {
     validationSignup(req);
-    const { firstName, lastName, emailId, password, age, gender } = req.body;
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      photoURL,
+      about,
+    } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
     // console.log(passwordHash);
     const user = new UserModel({
@@ -18,6 +27,8 @@ authRouter.post("/signup", async (req, res) => {
       password: passwordHash,
       age,
       gender,
+      photoURL,
+      about,
     });
     await user.save();
     res.send("user added");
@@ -48,16 +59,16 @@ authRouter.post("/login", async (req, res) => {
       }); // 1d expire of the cookies
       res.send(user);
     } else {
-      throw new Error("password not correct");
+      throw new Error("Invalid credentials");
     }
   } catch (err) {
-    res.status(400).send("Error saving the user:" + err.message);
+    res.status(400).send("Error saving the user: " + err.message);
   }
 });
 
 authRouter.post("/logout", (req, res) => {
   res.cookie("token", "", { expires: new Date(0) });
-  res.send("logout done");
+  res.json({ message: "Logout successfully!" });
 });
 
 module.exports = { authRouter };

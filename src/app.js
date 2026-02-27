@@ -8,15 +8,16 @@ const { requestRouter } = require("./routes/request");
 const { userRouter } = require("./routes/user");
 const cors = require("cors");
 
-
 const app = express();
 // convert the json to js object and send the app.post api in the req to read properly
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 // Mount route modules
 app.use("/", authRouter);
