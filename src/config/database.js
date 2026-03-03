@@ -1,13 +1,10 @@
+const url =
+  "mongodb+srv://NamasteDevNode:l7RjWUzf26ywcfb3@namastenode.4bsac80.mongodb.net/devTinder";
+
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
-  const mongoUri = process.env.MONGODB_URI;
-
-  if (!mongoUri) {
-    throw new Error("MONGODB_URI is not defined in environment variables");
-  }
-
-  await mongoose.connect(mongoUri);
+  await mongoose.connect(url);
 };
 
 module.exports = { connectDB };

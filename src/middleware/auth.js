@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../modules/user");
-const JWT_SECRET = process.env.JWT_SECRET || "Dev@Tinder$123";
 
 const userAuth = async (req, res, next) => {
   try {
@@ -10,7 +9,7 @@ const userAuth = async (req, res, next) => {
       return res.status(401).json({message : 'Please Login!'})
     };
 
-    const decodedObj = await jwt.verify(token, JWT_SECRET);
+    const decodedObj = await jwt.verify(token, "Dev@Tinder$123");
     const { _id } = decodedObj;
 
     // Find the user
