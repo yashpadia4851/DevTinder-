@@ -7,6 +7,7 @@ const { profileRouter } = require("./routes/profile");
 const { requestRouter } = require("./routes/request");
 const { userRouter } = require("./routes/user");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 // convert the json to js object and send the app.post api in the req to read properly
@@ -28,8 +29,8 @@ app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("Connected to MongoDB");
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000");
+    app.listen(process.env.PORT, () => {
+      console.log(`Server is running on port ${process.env.PORT}`);
     });
   })
   .catch((error) => {
